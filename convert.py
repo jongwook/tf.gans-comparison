@@ -24,7 +24,7 @@ def center_crop(im, output_size):
 
     offset_h = int((h - output_height) / 2)
     offset_w = int((w - output_width) / 2)
-    return im[offset_h:offset_h+output_height, offset_w:offset_w+output_width, :]
+    return im[offset_h:offset_h+output_height, offset_w:offset_w+output_width]
 
 
 def convert(source_dir, target_dir, crop_size, out_size, exts=[''], num_shards=128, tfrecords_prefix=''):
@@ -71,7 +71,7 @@ def convert(source_dir, target_dir, crop_size, out_size, exts=[''], num_shards=1
             writer = tf.python_io.TFRecordWriter(tfrecord_path)
 
         # mode='RGB' read even grayscale image as RGB shape
-        im = scipy.misc.imread(path, mode='RGB')
+        im = scipy.misc.imread(path, mode='L')
         # preproc
         try:
             im = center_crop(im, crop_size)
@@ -122,7 +122,7 @@ def export_images(db_path, out_dir, flat=False, limit=-1):
 
 if __name__ == "__main__":
     # CelebA
-    convert('./data/celebA', './data/celebA_128_tfrecords', crop_size=[128, 128], out_size=[128, 128], 
+    convert('./data/celebA', './data/celebA_grayscale128_tfrecords', crop_size=[128, 128], out_size=[128, 128], 
         exts=['jpg'], num_shards=128, tfrecords_prefix='celebA')
 
     # LSUN

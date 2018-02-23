@@ -3,7 +3,7 @@ import tensorflow as tf
 slim = tf.contrib.slim
 from utils import expected_shape
 import ops
-from basemodel import BaseModel
+from .basemodel import BaseModel
 
 
 class BEGAN(BaseModel):

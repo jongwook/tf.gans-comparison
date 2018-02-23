@@ -42,8 +42,8 @@ def train(model, dataset, input_op, num_epochs, batch_size, n_examples, ckpt_ste
     print("\n# of examples: {}".format(n_examples))
     print("steps per epoch: {}\n".format(n_examples//batch_size))
 
-    summary_path = os.path.join('./summary/', dataset, model.name)
-    ckpt_path = os.path.join('./checkpoints', dataset, model.name)
+    summary_path = os.path.join('.', 'summary', dataset, model.name)
+    ckpt_path = os.path.join('.', 'checkpoints', dataset, model.name)
     if renew:
         if os.path.exists(summary_path):
             tf.gfile.DeleteRecursively(summary_path)

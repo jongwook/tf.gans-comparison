@@ -3,7 +3,7 @@ import tensorflow as tf
 slim = tf.contrib.slim
 from utils import expected_shape
 import ops
-from basemodel import BaseModel
+from .basemodel import BaseModel
 
 '''
 DRAGAN has similar gradient penalty to WGAN-GP, although different motivation.
@@ -16,7 +16,7 @@ class DRAGAN(BaseModel):
         self.beta2 = 0.9
         self.ld = 10. # lambda
         self.C = 0.5
-        super(DRAGAN, self).__init__(name=name, training=training, D_lr=D_lr, G_lr=G_lr, 
+        super(DRAGAN, self).__init__(name=name, training=training, D_lr=D_lr, G_lr=G_lr,
             image_shape=image_shape, z_dim=z_dim)
 
     def _build_train_graph(self):
@@ -45,7 +45,7 @@ class DRAGAN(BaseModel):
             noise = self.C*x_std*eps # delta in paper
             # Author suggested U[0,1] in original paper, but he admitted it is bug in github
             # (https://github.com/kodalinaveen3/DRAGAN). It should be two-sided.
-            alpha = tf.random_uniform(shape=[shape[0], 1, 1, 1], minval=-1., maxval=1.) 
+            alpha = tf.random_uniform(shape=[shape[0], 1, 1, 1], minval=-1., maxval=1.)
             xhat = tf.clip_by_value(X + alpha*noise, -1., 1.) # x_hat should be in the space of X
 
             D_xhat_prob, D_xhat_logits = self._discriminator(xhat, reuse=True)
@@ -83,7 +83,7 @@ class DRAGAN(BaseModel):
             # accesible points
             self.X = X
             self.z = z
-            self.D_train_op = D_train_op 
+            self.D_train_op = D_train_op
             self.G_train_op = G_train_op
             self.fake_sample = G
             self.global_step = global_step
@@ -93,7 +93,7 @@ class DRAGAN(BaseModel):
     def _discriminator(self, X, reuse=False):
         with tf.variable_scope('discriminator', reuse=reuse):
             net = X
-            
+
             with slim.arg_scope([slim.conv2d], kernel_size=[5,5], stride=2, activation_fn=ops.lrelu):
                 net = slim.conv2d(net, 64)
                 expected_shape(net, [32, 32, 64])

@@ -3,17 +3,17 @@ import tensorflow as tf
 slim = tf.contrib.slim
 from utils import expected_shape
 import ops
-from basemodel import BaseModel
+from .basemodel import BaseModel
 
 
 class EBGAN(BaseModel):
-    def __init__(self, name, training, D_lr=1e-3, G_lr=1e-3, image_shape=[64, 64, 3], z_dim=100, 
+    def __init__(self, name, training, D_lr=1e-3, G_lr=1e-3, image_shape=[64, 64, 3], z_dim=100,
         pt_weight=0.1, margin=20.):
         ''' The default value of pt_weight and margin is taken from the paper for celebA. '''
         self.pt_weight = pt_weight
         self.m = margin
         self.beta1 = 0.5
-        super(EBGAN, self).__init__(name=name, training=training, D_lr=D_lr, G_lr=G_lr, 
+        super(EBGAN, self).__init__(name=name, training=training, D_lr=D_lr, G_lr=G_lr,
             image_shape=image_shape, z_dim=z_dim)
 
     def _build_train_graph(self):
@@ -73,8 +73,8 @@ class EBGAN(BaseModel):
     def _discriminator(self, X, reuse=False):
         with tf.variable_scope('D', reuse=reuse):
             net = X
-            
-            with slim.arg_scope([slim.conv2d, slim.conv2d_transpose], kernel_size=[4,4], stride=2, padding='SAME', 
+
+            with slim.arg_scope([slim.conv2d, slim.conv2d_transpose], kernel_size=[4,4], stride=2, padding='SAME',
                 activation_fn=ops.lrelu, normalizer_fn=slim.batch_norm, normalizer_params=self.bn_params):
                 # encoder
                 net = slim.conv2d(net, 64, normalizer_fn=None) # 32x32
@@ -87,7 +87,7 @@ class EBGAN(BaseModel):
                 net = slim.conv2d_transpose(net, 64) # 32x32
                 x_recon = slim.conv2d_transpose(net, 3, activation_fn=None, normalizer_fn=None)
                 expected_shape(x_recon, [64, 64, 3])
-            
+
             energy = tf.sqrt(tf.reduce_sum(tf.square(X-x_recon), axis=[1,2,3])) # l2-norm error
             energy = tf.reduce_mean(energy)
 
@@ -99,7 +99,7 @@ class EBGAN(BaseModel):
             net = slim.fully_connected(net, 4*4*1024, activation_fn=tf.nn.relu)
             net = tf.reshape(net, [-1, 4, 4, 1024])
 
-            with slim.arg_scope([slim.conv2d_transpose], kernel_size=[4,4], stride=2, padding='SAME', 
+            with slim.arg_scope([slim.conv2d_transpose], kernel_size=[4,4], stride=2, padding='SAME',
                 activation_fn=tf.nn.relu, normalizer_fn=slim.batch_norm, normalizer_params=self.bn_params):
                 net = slim.conv2d_transpose(net, 512)
                 expected_shape(net, [8, 8, 512])
@@ -119,9 +119,8 @@ class EBGAN(BaseModel):
         # l2_norm = tf.sqrt(tf.reduce_sum(tf.square(lf), axis=1, keep_dims=True))
         l2_norm = tf.norm(lf, axis=1, keep_dims=True)
         expected_shape(l2_norm, [1])
-        unit_lf = lf / (l2_norm + eps) 
+        unit_lf = lf / (l2_norm + eps)
         cos_sim = tf.square(tf.matmul(unit_lf, unit_lf, transpose_b=True)) # [N, h_dim] x [h_dim, N] = [N, N]
         N = tf.cast(tf.shape(lf)[0], tf.float32) # batch_size
         pt_loss = (tf.reduce_sum(cos_sim)-N) / (N*(N-1))
         return pt_loss
-        

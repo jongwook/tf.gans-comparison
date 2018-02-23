@@ -79,7 +79,7 @@ def expected_shape(tensor, expected):
         shape = tensor.shape[1:]
     else:
         shape = tensor[1:]
-    shape = map(lambda x: x.value, shape)
+    shape = list(map(lambda x: x.value, shape))
     err_msg = 'wrong shape {} (expected shape is {})'.format(shape, expected)
     assert shape == expected, err_msg
     # if not shape == expected:

@@ -3,7 +3,7 @@ import tensorflow as tf
 slim = tf.contrib.slim
 from utils import expected_shape
 import ops
-from basemodel import BaseModel
+from .basemodel import BaseModel
 
 '''
 WGAN:
@@ -20,7 +20,7 @@ class WGAN_GP(BaseModel):
         self.beta2 = 0.9
         self.ld = 10. # lambda
         self.n_critic = 5
-        super(WGAN_GP, self).__init__(name=name, training=training, D_lr=D_lr, G_lr=G_lr, 
+        super(WGAN_GP, self).__init__(name=name, training=training, D_lr=D_lr, G_lr=G_lr,
             image_shape=image_shape, z_dim=z_dim)
 
     def _build_train_graph(self):
@@ -40,7 +40,7 @@ class WGAN_GP(BaseModel):
 
             # Gradient Penalty (GP)
             eps = tf.random_uniform(shape=[tf.shape(X)[0], 1, 1, 1], minval=0., maxval=1.)
-            x_hat = eps*X + (1.-eps)*G 
+            x_hat = eps*X + (1.-eps)*G
             C_xhat = self._critic(x_hat, reuse=True)
             C_xhat_grad = tf.gradients(C_xhat, x_hat)[0] # gradient of D(x_hat)
             C_xhat_grad_norm = tf.norm(slim.flatten(C_xhat_grad), axis=1)  # l2 norm
@@ -98,7 +98,7 @@ class WGAN_GP(BaseModel):
         '''
         with tf.variable_scope('critic', reuse=reuse):
             net = X
-            
+
             with slim.arg_scope([slim.conv2d], kernel_size=[5,5], stride=2, padding='SAME', activation_fn=ops.lrelu):
                 net = slim.conv2d(net, 64)
                 expected_shape(net, [32, 32, 64])
@@ -120,7 +120,7 @@ class WGAN_GP(BaseModel):
             net = slim.fully_connected(net, 4*4*1024, activation_fn=tf.nn.relu)
             net = tf.reshape(net, [-1, 4, 4, 1024])
 
-            with slim.arg_scope([slim.conv2d_transpose], kernel_size=[5,5], stride=2, activation_fn=tf.nn.relu, 
+            with slim.arg_scope([slim.conv2d_transpose], kernel_size=[5,5], stride=2, activation_fn=tf.nn.relu,
                 normalizer_fn=slim.batch_norm, normalizer_params=self.bn_params):
                 net = slim.conv2d_transpose(net, 512)
                 expected_shape(net, [8, 8, 512])
@@ -155,12 +155,12 @@ class WGAN_GP(BaseModel):
 
                 return net + shortcut
             elif resample == 'up': # Upsample
-                upsample_shape = map(lambda x: int(x)*2, input_shape[1:3])
-                shortcut = tf.image.resize_nearest_neighbor(X, upsample_shape) 
+                upsample_shape = list(map(lambda x: int(x)*2, input_shape[1:3]))
+                shortcut = tf.image.resize_nearest_neighbor(X, upsample_shape)
                 shortcut = slim.conv2d(shortcut, nf_output, kernel_size=[1,1], activation_fn=None)
 
                 net = slim.batch_norm(X, activation_fn=tf.nn.relu, **self.bn_params)
-                net = tf.image.resize_nearest_neighbor(net, upsample_shape) 
+                net = tf.image.resize_nearest_neighbor(net, upsample_shape)
                 net = slim.conv2d(net, nf_output, kernel_size=kernel_size, biases_initializer=None) # skip bias
                 net = slim.batch_norm(net, activation_fn=tf.nn.relu, **self.bn_params)
                 net = slim.conv2d(net, nf_output, kernel_size=kernel_size)

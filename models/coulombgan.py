@@ -5,7 +5,7 @@ import numpy as np
 slim = tf.contrib.slim
 from utils import expected_shape
 import ops
-from basemodel import BaseModel
+from .basemodel import BaseModel
 
 
 def sd_matrix(a, b, name='square_distance_matrix'):
@@ -21,7 +21,7 @@ def sd_matrix(a, b, name='square_distance_matrix'):
 
 
 def plummer_kernel(a, b, kernel_dim, kernel_eps, name='plummer_kernel'):
-    # plummer kernel represents `influence`. 
+    # plummer kernel represents `influence`.
     with tf.variable_scope(name):
         r = sd_matrix(a, b) + kernel_eps**2
         d = kernel_dim-2
@@ -61,7 +61,7 @@ def calc_potential(x, y, a, kernel_dim, kernel_eps, name='potential'):
     '''Paper notations are used in this function
     x: fake
     y: real
-    
+
     return: potential of a
     '''
 
@@ -87,7 +87,7 @@ class CoulombGAN(BaseModel):
         self.beta1 = 0.5
         self.kernel_dim = 3
         self.kernel_eps = 1.
-        super(CoulombGAN, self).__init__(name=name, training=training, D_lr=D_lr, G_lr=G_lr, 
+        super(CoulombGAN, self).__init__(name=name, training=training, D_lr=D_lr, G_lr=G_lr,
             image_shape=image_shape, z_dim=z_dim)
 
     def _build_train_graph(self):
@@ -101,12 +101,12 @@ class CoulombGAN(BaseModel):
             D_fake = self._discriminator(G, reuse=True)
 
             '''
-            D estimates potential and G minimize D_fake (estimated potential of fake). 
-            It means that minimize distance the between real and fake 
+            D estimates potential and G minimize D_fake (estimated potential of fake).
+            It means that minimize distance the between real and fake
             while maximizing the distance between fake and fake.
 
             P(a) = k(a, real) - k(a, fake).
-            So, 
+            So,
             P(real) = k(real, real) - k(real, fake),
             P(fake) = k(fake, real) - k(fake, fake).
             '''
@@ -165,8 +165,8 @@ class CoulombGAN(BaseModel):
     def _discriminator(self, X, reuse=False):
         with tf.variable_scope('D', reuse=reuse):
             net = X
-            
-            with slim.arg_scope([slim.conv2d], kernel_size=[5,5], stride=2, padding='SAME', activation_fn=ops.lrelu, 
+
+            with slim.arg_scope([slim.conv2d], kernel_size=[5,5], stride=2, padding='SAME', activation_fn=ops.lrelu,
                 normalizer_fn=slim.batch_norm, normalizer_params=self.bn_params):
                 net = slim.conv2d(net, 128, normalizer_fn=None)
                 net = slim.conv2d(net, 256)
@@ -185,7 +185,7 @@ class CoulombGAN(BaseModel):
             net = slim.fully_connected(net, 4*4*1024, activation_fn=tf.nn.relu)
             net = tf.reshape(net, [-1, 4, 4, 1024])
 
-            with slim.arg_scope([slim.conv2d_transpose], kernel_size=[5,5], stride=2, padding='SAME', 
+            with slim.arg_scope([slim.conv2d_transpose], kernel_size=[5,5], stride=2, padding='SAME',
                 activation_fn=tf.nn.relu, normalizer_fn=slim.batch_norm, normalizer_params=self.bn_params):
                 net = slim.conv2d_transpose(net, 512)
                 expected_shape(net, [8, 8, 512])
