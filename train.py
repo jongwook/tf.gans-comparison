@@ -18,7 +18,7 @@ def build_parser():
     parser.add_argument('--model', help=models_str, required=True) # DRAGAN, CramerGAN
     parser.add_argument('--name', help='default: name=model')
     parser.add_argument('--dataset', '-D', help='CelebA / LSUN', required=True)
-    parser.add_argument('--ckpt_step', default=5000, help='# of steps for saving checkpoint (default: 5000)', type=int)
+    parser.add_argument('--ckpt_step', default=1000, help='# of steps for saving checkpoint (default: 5000)', type=int)
     parser.add_argument('--renew', action='store_true', help='train model from scratch - \
         clean saved checkpoints and summaries', default=False)
 
@@ -116,11 +116,10 @@ def train(model, dataset, input_op, num_epochs, batch_size, n_examples, ckpt_ste
 
                 summary_writer.add_summary(summary, global_step=global_step)
 
-                if global_step % 10 == 0:
-                    pbar.update(10)
+                pbar.update()
 
-                    if global_step % ckpt_step == 0:
-                        saver.save(sess, ckpt_path+'/'+model.name, global_step=global_step)
+                if global_step % ckpt_step == 0:
+                    saver.save(sess, ckpt_path+'/'+model.name, global_step=global_step)
 
         except tf.errors.OutOfRangeError:
             print('\nDone -- epoch limit reached\n')

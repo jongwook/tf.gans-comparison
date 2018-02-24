@@ -34,7 +34,7 @@ def get_all_checkpoints(ckpt_dir, force=False):
 
     if force:
         ckpts = os.listdir(ckpt_dir) # get all fns
-        ckpts = map(map(lambda p: os.path.splitext(p)[0], ckpts)) # del ext
+        ckpts = list(map(lambda p: os.path.splitext(p)[0], ckpts)) # del ext
         ckpts = set(ckpts) # unique
         ckpts = list(filter(lambda x: x.split('-')[-1].isdigit(), ckpts)) # filter non-ckpt
         ckpts = sorted(ckpts, key=lambda x: int(x.split('-')[-1])) # sort
