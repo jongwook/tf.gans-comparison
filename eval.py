@@ -74,6 +74,7 @@ def eval(model, name, dataset, sample_shape=[4,4], load_all_ckpt=True):
 
             # inverse transform: [-1, 1] => [0, 1]
             fake_samples = (fake_samples + 1.) / 2.
+            fake_samples = np.clip(fake_samples, 0, 1)
             merged_samples = utils.merge(fake_samples, size=sample_shape)
             fn = "{:0>6d}.png".format(global_step)
             scipy.misc.imsave(os.path.join(dir_name, fn), merged_samples)
